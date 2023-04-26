@@ -1,0 +1,59 @@
+package com.er453r
+
+import com.er453r.data.Configuration
+import com.er453r.data.SortClass
+import mu.KotlinLogging
+import java.io.File
+import kotlin.system.exitProcess
+
+private val logger = KotlinLogging.logger {}
+
+fun main() {
+    val configuration = try {
+        Configuration.readFromFile()
+    } catch (e: Exception) {
+        logger.error(e) { "Error parsing configuration!" }
+
+        exitProcess(1)
+    }
+
+    logger.info { "Configuration is: $configuration" }
+
+    val ignore = mutableSetOf(".jellyfin")
+
+    val sortClasses = arrayOf(
+        SortClass(
+            name = "shows",
+            regex = Regex("S\\d+"), // Regex("\\.S\\d+E\\d+\\.")
+        ),
+        SortClass(
+            name = "movies",
+            regex = null,
+        ),
+    )
+
+    val files = File(configuration.media).list()!!.toSet() - ignore
+
+    val sortMap = mutableMapOf<String, MutableSet<String>>()
+
+    for (name in files) {
+        sortClasses.firstOrNull { it.regex != null && it.regex.containsMatchIn(name) }?.let {
+            sortMap.getOrPut(it.name) { mutableSetOf() }.add(name)
+        } ?: run {
+            sortMap.getOrPut(sortClasses.first { it.regex == null }.name) { mutableSetOf() }.add(name)
+        }
+    }
+
+    // create directory if not exists
+    for (sortClass in sortClasses)
+        File("${configuration.media}/.jellyfin/${sortClass.name}").mkdirs()
+
+    sortMap.keys.forEach { key ->
+        sortMap[key]!!.forEach {
+            val cmd = "bash -c 'cd \"${configuration.media}/.jellyfin/$key\"; ln -s \"../../$it\" \"$it\"'"
+            println(cmd)
+
+            Runtime.getRuntime().exec(cmd)
+        }
+    }
+}
