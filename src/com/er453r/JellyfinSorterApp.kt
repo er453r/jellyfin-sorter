@@ -4,6 +4,8 @@ import com.er453r.data.Configuration
 import com.er453r.data.SortClass
 import mu.KotlinLogging
 import java.io.File
+import java.nio.file.Files
+import java.nio.file.Path
 import kotlin.system.exitProcess
 
 private val logger = KotlinLogging.logger {}
@@ -50,10 +52,7 @@ fun main() {
 
     sortMap.keys.forEach { key ->
         sortMap[key]!!.forEach {
-            val cmd = "bash -c 'cd \"${configuration.media}/.jellyfin/$key\"; ln -s \"../../$it\" \"$it\"'"
-            println(cmd)
-
-            Runtime.getRuntime().exec(cmd)
+            Files.createSymbolicLink(Path.of("${configuration.media}/.jellyfin/$key/$it"), Path.of("../../$it"))
         }
     }
 }
