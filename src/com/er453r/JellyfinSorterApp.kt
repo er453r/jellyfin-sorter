@@ -1,58 +1,103 @@
 package com.er453r
 
-import com.er453r.data.Configuration
-import com.er453r.data.SortClass
 import mu.KotlinLogging
 import java.io.File
-import java.nio.file.Files
-import java.nio.file.Path
 import kotlin.system.exitProcess
 
 private val logger = KotlinLogging.logger {}
 
-fun main() {
-    val configuration = try {
-        Configuration.readFromFile()
-    } catch (e: Exception) {
-        logger.error(e) { "Error parsing configuration!" }
+fun die(message: String) {
+    System.err.println(message)
+    exitProcess(-1)
+}
 
-        exitProcess(1)
+fun walk(directory: File, filter: (File) -> Boolean, logic: (File) -> Unit) {
+    directory.listFiles()!!
+        .filter { !it.relativeTo(directory).path.startsWith(".") }
+        .forEach {
+            if (it.isDirectory)
+                walk(it, filter, logic)
+            else if (filter(it))
+                logic(it)
+        }
+}
+
+fun <T> Iterable<T>.chunkedBy(logic: (T) -> Boolean): Iterable<Iterable<T>> {
+    val chunks = mutableListOf<MutableList<T>>()
+
+    this.forEach {
+        if (logic(it))
+            chunks.add(mutableListOf())
+
+        chunks.last().add(it)
     }
 
-    logger.info { "Configuration is: $configuration" }
+    return chunks
+}
 
-    val ignore = mutableSetOf(".jellyfin")
+private const val ALL = "all"
 
-    val sortClasses = arrayOf(
-        SortClass(
-            name = "shows",
-            regex = Regex("S\\d+"), // Regex("\\.S\\d+E\\d+\\.")
-        ),
-        SortClass(
-            name = "movies",
-            regex = null,
-        ),
-    )
+data class ConfigSection(
+    val name: String,
+    val rules: List<Regex>,
+)
 
-    val files = File(configuration.media).list()!!.toSet() - ignore
+fun main(args: Array<String>) {
+    if (args.size != 1)
+        die("Provide at least 1 argument")
 
-    val sortMap = mutableMapOf<String, MutableSet<String>>()
+    val directory = File(args.first()).also {
+        if (!it.isDirectory)
+            die("Not a directory!")
+    }
 
-    for (name in files) {
-        sortClasses.firstOrNull { it.regex != null && it.regex.containsMatchIn(name) }?.let {
-            sortMap.getOrPut(it.name) { mutableSetOf() }.add(name)
-        } ?: run {
-            sortMap.getOrPut(sortClasses.first { it.regex == null }.name) { mutableSetOf() }.add(name)
+    val configFile = File(directory.absolutePath + File.separator + ".jellyfin-sorter").also {
+        if (!it.exists())
+            die("Config file $it does not exists!")
+    }
+
+    val configLines = configFile.readLines()
+
+    val config = configLines
+        .filter { it.isNotBlank() }
+        .chunkedBy { it.startsWith("[") }
+        .map { chunk ->
+            ConfigSection(
+                name = chunk.first().substring(1, chunk.first().length - 1),
+                rules = chunk.filterIndexed { n, _ -> n > 0 }.map { Regex(it) },
+            )
+        }
+
+    logger.info { "Config loaded" }
+    config.forEach { logger.info { "\t$it" } }
+
+    val sort = mutableMapOf<String, MutableList<File>>()
+
+    walk(directory, { file ->
+        config.first { it.name == ALL }.rules.firstOrNull { it.containsMatchIn(file.path) } != null
+    }) { file ->
+        run {
+            config.filter { it.name != ALL }.forEach { section ->
+                if (section.rules.firstOrNull { it.containsMatchIn(file.path) } != null) {
+                    sort.getOrPut(section.name) {
+                        mutableListOf()
+                    }.add(file)
+
+                    return@run
+                }
+            }
+
+            logger.warn { "Do not know what to do with $file" } // should probably never happen
         }
     }
 
-    // create directory if not exists
-    for (sortClass in sortClasses)
-        File("${configuration.media}/.jellyfin/${sortClass.name}").mkdirs()
+    logger.info { "Finished sorting" }
 
-    sortMap.keys.forEach { key ->
-        sortMap[key]!!.forEach {
-            Files.createSymbolicLink(Path.of("${configuration.media}/.jellyfin/$key/$it"), Path.of("../../$it"))
+    sort.forEach { (section, list) ->
+        logger.info { "$section - ${list.size}" }
+
+        list.forEach {
+            logger.info { "\t${it.relativeTo(directory)}" }
         }
     }
 }
