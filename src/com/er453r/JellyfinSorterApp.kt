@@ -2,6 +2,7 @@ package com.er453r
 
 import mu.KotlinLogging
 import java.io.File
+import java.nio.file.Files
 import kotlin.system.exitProcess
 
 private val logger = KotlinLogging.logger {}
@@ -73,7 +74,7 @@ fun main(args: Array<String>) {
 
     val sort = mutableMapOf<String, MutableList<File>>()
 
-    walk(directory, { file ->
+    walk(directory, filter = { file ->
         config.first { it.name == ALL }.rules.firstOrNull { it.containsMatchIn(file.path) } != null
     }) { file ->
         run {
@@ -96,8 +97,29 @@ fun main(args: Array<String>) {
     sort.forEach { (section, list) ->
         logger.info { "$section - ${list.size}" }
 
-        list.forEach {
-            logger.info { "\t${it.relativeTo(directory)}" }
+//        list.forEach {
+//            logger.info { "\t${it.relativeTo(directory)}" }
+//        }
+    }
+
+    val links = mutableSetOf<String>()
+
+    // link creation
+    sort.forEach { (section, list) ->
+        val dir = File("${directory.path}/.jellyfin/$section")
+
+        list.forEach file@{
+            val link = File("$dir/${it.relativeTo(directory)}")
+
+            links += "$section/${it.relativeTo(directory)}"
+
+            if (link.exists())
+                return@file
+
+            link.mkdirs()
+            Files.createSymbolicLink(link.toPath(), it.relativeTo(link).toPath())
         }
     }
+
+    logger.info { "Done!" }
 }
