@@ -102,8 +102,6 @@ fun main(args: Array<String>) {
 //        }
     }
 
-    val links = mutableSetOf<String>()
-
     // link creation
     sort.forEach { (section, list) ->
         val dir = File("${directory.path}/.jellyfin/$section")
@@ -111,14 +109,12 @@ fun main(args: Array<String>) {
         list.forEach file@{
             val link = File("$dir/${it.relativeTo(directory)}")
 
-            links += "$section/${it.relativeTo(directory)}"
-
             if (link.exists())
                 return@file
 
             val relative = it.relativeTo(link)
             logger.info { "Creating link: $link -> $relative" }
-            link.mkdirs()
+            link.parentFile.mkdirs()
             Files.createSymbolicLink(link.toPath(), relative.toPath())
         }
     }
