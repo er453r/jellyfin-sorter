@@ -116,8 +116,10 @@ fun main(args: Array<String>) {
             if (link.exists())
                 return@file
 
+            val relative = it.relativeTo(link)
+            logger.info { "Creating link: $link -> $relative" }
             link.mkdirs()
-            Files.createSymbolicLink(link.toPath(), it.relativeTo(link).toPath())
+            Files.createSymbolicLink(link.toPath(), relative.toPath())
         }
     }
 
