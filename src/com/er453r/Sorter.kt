@@ -4,6 +4,7 @@ import mu.KotlinLogging
 import java.io.File
 import java.nio.file.Files
 import kotlin.io.path.pathString
+import kotlin.io.path.relativeTo
 
 private val logger = KotlinLogging.logger {}
 
@@ -48,7 +49,7 @@ class Sorter {
                 val relative = File("${it.relativeTo(link.parentFile)}")
 
                 if (link.exists()) {
-                    val currentRelative = Files.readSymbolicLink(link.toPath())
+                    val currentRelative = Files.readSymbolicLink(link.toPath()).relativeTo(directory.toPath())
 
                     if(currentRelative != relative){
                         logger.info { "Removing invalid link $currentRelative != $relative" }
