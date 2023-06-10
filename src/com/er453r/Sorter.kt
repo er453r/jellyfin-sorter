@@ -51,7 +51,7 @@ class Sorter {
                     val currentRelative = Files.readSymbolicLink(link.toPath())
 
                     if(currentRelative != relative){
-                        logger.info { "Removing invalid link $link -> $currentRelative" }
+                        logger.info { "Removing invalid link $currentRelative != $relative" }
 
                         if(!dryRun)
                             link.delete()
