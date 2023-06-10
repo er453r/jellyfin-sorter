@@ -3,6 +3,7 @@ package com.er453r
 import mu.KotlinLogging
 import java.io.File
 import java.nio.file.Files
+import kotlin.io.path.pathString
 
 private val logger = KotlinLogging.logger {}
 
@@ -49,7 +50,14 @@ class Sorter {
                 if (link.exists()) {
                     val currentRelative = Files.readSymbolicLink(link.toPath())
 
-                    return@file
+                    if(currentRelative != relative){
+                        logger.info { "Removing invalid link $link -> $currentRelative" }
+
+                        if(!dryRun)
+                            link.delete()
+                    }
+                    else
+                        return@file
                 }
 
                 logger.info { "Creating link: $link -> $relative" }

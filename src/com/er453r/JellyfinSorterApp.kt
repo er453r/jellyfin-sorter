@@ -21,7 +21,7 @@ fun main(args: Array<String>) {
 
     val configLines = configFile.readLines()
 
-     logger.info { "Cofnig file: \n${configFile.readText()}" }
+     logger.info { "Config file: \n${configFile.readText()}" }
 
     val config = configLines
         .filter { it.isNotBlank() }
