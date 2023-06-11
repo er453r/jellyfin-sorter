@@ -14,7 +14,8 @@ fun walk(directory: File, filter: (File) -> Boolean, logic: (File) -> Unit) {
         .forEach {
             if (it.isDirectory)
                 walk(it, filter, logic)
-            else if (filter(it))
+
+            if (filter(it))
                 logic(it)
         }
 }
