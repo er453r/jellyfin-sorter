@@ -7,7 +7,7 @@ import java.nio.file.Files
 private val logger = KotlinLogging.logger {}
 
 class Sorter {
-    fun mutatedPath(path:String, replacements:List<Pair<String,String>>):String{
+    private fun mutatedPath(path:String, replacements:List<Pair<String,String>>):String{
         var result = path
 
         replacements.forEach {
@@ -60,7 +60,7 @@ class Sorter {
             val sectionReplacements = replacements + config.first { it.name == section }.replace
 
             list.forEach file@{
-                val link = File(mutatedPath("$dir/${it.relativeTo(directory)}", sectionReplacements))
+                val link = File("$dir/${mutatedPath("${it.relativeTo(directory)}", sectionReplacements)}")
                 val relative = File("${it.relativeTo(link.parentFile)}")
 
                 shouldExist += link.absolutePath

@@ -10,7 +10,7 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <kotlin.version>1.8.21</kotlin.version>
+        <kotlin.version>1.9.20</kotlin.version>
         <kotlin.code.style>official</kotlin.code.style>
         <main.class>com.er453r.JellyfinSorterAppKt</main.class>
         <junit.version>4.13.2</junit.version>
@@ -41,7 +41,7 @@
         <dependency>
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-classic</artifactId>
-            <version>1.4.7</version>
+            <version>1.4.11</version>
         </dependency>
 
         <dependency>
