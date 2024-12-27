@@ -21,5 +21,5 @@ RUN mvn package
 FROM debian:bookworm-slim
 WORKDIR /sorter
 COPY --from=build /build/runtime runtime
-COPY --from=build /build/target/*.jar ./sorter.jar
+COPY --from=build /build/target/*-jar-with-dependencies.jar ./sorter.jar
 ENTRYPOINT runtime/bin/java -jar sorter.jar & wait
