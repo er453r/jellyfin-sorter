@@ -52,7 +52,7 @@ fun main() {
                 .map { chunk ->
                     ConfigSection(
                         name = chunk.first().substring(1, chunk.first().length - 1),
-                        rules = chunk.filterIndexed { n, it -> n > 0 && !it.contains(" -> ") }.map { Regex(it) },
+                        rules = chunk.filterIndexed { n, it -> n > 0 && !it.contains(" -> ") }.map { Regex(it, RegexOption.IGNORE_CASE) },
                         replace = chunk.filterIndexed { n, it -> n > 0 && it.contains(" -> ") }
                             .map { it.split(" -> ").let { l -> l[0] to l[1] } },
                     )

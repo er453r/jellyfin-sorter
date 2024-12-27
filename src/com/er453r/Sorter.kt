@@ -11,7 +11,7 @@ class Sorter {
         var result = path
 
         replacements.forEach {
-            result = result.replace(Regex(it.first), it.second)
+            result = result.replace(Regex(it.first, RegexOption.IGNORE_CASE), it.second)
         }
 
         return result
