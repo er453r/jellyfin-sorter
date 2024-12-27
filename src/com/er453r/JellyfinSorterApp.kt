@@ -8,9 +8,9 @@ private val logger = KotlinLogging.logger {}
 
 fun main() {
     val config = Config(
-        sourceDirectory = System.getenv("SOURCE_DIRECTORY") ?: "",
-        targetDirectory = System.getenv("TARGET_DIRECTORY") ?: "",
-        configFile = System.getenv("CONFIG_FILE") ?: "",
+        sourceDirectory = System.getenv("SOURCE_DIRECTORY") ?: "/source",
+        targetDirectory = System.getenv("TARGET_DIRECTORY") ?: "/target",
+        configFile = System.getenv("CONFIG_FILE") ?: "/etc/jellyfin-sorter.conf",
         dryRun = System.getenv("DRY_RUN") != null,
         intervalSeconds = System.getenv("INTERVAL_S") ?: "30",
     )
