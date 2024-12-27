@@ -17,12 +17,12 @@ class Sorter {
         return result
     }
 
-    fun sort(directory: File, config: List<ConfigSection>, dryRun: Boolean = true) {
+    fun sort(sourceDirectory: File, targetDirectory: File, config: List<ConfigSection>, dryRun: Boolean = true) {
         val sort = mutableMapOf<String, MutableList<File>>()
 
         val replacements = config.first { it.name == ConfigSection.ALL }.replace
 
-        walk(directory, filter = { file ->
+        walk(sourceDirectory, filter = { file ->
             config.first { it.name == ConfigSection.ALL }.rules.firstOrNull { it.containsMatchIn(file.path) } != null
         }) { file ->
             run {
@@ -56,11 +56,11 @@ class Sorter {
 
         // link creation
         sort.forEach { (section, list) ->
-            val dir = File("${directory.path}/.jellyfin/$section")
+            val dir = File("${targetDirectory.path}/$section")
             val sectionReplacements = replacements + config.first { it.name == section }.replace
 
             list.forEach file@{
-                val link = File("$dir/${mutatedPath("${it.relativeTo(directory)}", sectionReplacements)}")
+                val link = File("$dir/${mutatedPath("${it.relativeTo(sourceDirectory)}", sectionReplacements)}")
                 val relative = File("${it.relativeTo(link.parentFile)}")
 
                 shouldExist += link.absolutePath
@@ -86,10 +86,10 @@ class Sorter {
             }
         }
 
-        logger.info { "Sorting $directory done! Clean up..." }
+        logger.info { "Sorting $sourceDirectory done! Clean up..." }
 
         logger.info { "Removing unneeded files..." }
-        walk(File("${directory.path}/.jellyfin"), { !it.isDirectory }) {
+        walk(File(targetDirectory.path), { !it.isDirectory }) {
             if (it.absolutePath !in shouldExist) {
                 logger.info { "$it should not exist! Deleting..." }
 
@@ -99,7 +99,7 @@ class Sorter {
         }
 
         logger.info { "Removing unneeded directories..." }
-        walk(File("${directory.path}/.jellyfin"), { it.isDirectory }) {
+        walk(File(targetDirectory.path), { it.isDirectory }) {
             if (it.listFiles()!!.isEmpty()) {
                 logger.info { "$it is empty! Deleting..." }
 
