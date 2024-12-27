@@ -14,8 +14,8 @@
         <kotlin.code.style>official</kotlin.code.style>
         <main.class>com.er453r.JellyfinSorterAppKt</main.class>
         <junit.version>4.13.2</junit.version>
-        <java.version>11</java.version>
-        <maven.compiler.source>15</maven.compiler.source>
+        <java.version>21</java.version>
+        <maven.compiler.source>21</maven.compiler.source>
         <maven.compiler.target>${java.version}</maven.compiler.target>
     </properties>
 
