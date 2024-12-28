@@ -15,6 +15,7 @@ class JellyfinSorterApp {
     private val failPaths = arrayOf(
         "./The.Walkers.S01.720p.HDTV.X264-DIMENSION/The.Walkers.S01E03.sample.720p.HDTV.X264-DIMENSION.mkv",
         "./Crumbs[Entire Series][Funnyguy263]/Season 8 Extras/Crumbs.S08E02.DVDRip.XviD-REWARD.avi",
+        "./Crumbs[Entire Series][Funnyguy263]/Season 8/Crumbs.S08E02.DVDRip.XviD-REWARD.txt",
     )
 
     @Test
@@ -34,7 +35,7 @@ class JellyfinSorterApp {
     fun `Negative test`() {
         logger.info { "Negative test!" }
 
-        val negativeRegex = Regex("""(!derp|sample|extras).+(mp4|mkv|avi)$""", RegexOption.IGNORE_CASE)
+        val negativeRegex = Regex("""^((?!sample|extras).)*(mp4|mkv|avi)$""", RegexOption.IGNORE_CASE)
 
         (testPaths + failPaths).forEach {
             logger.info { "Testing: $it" }
