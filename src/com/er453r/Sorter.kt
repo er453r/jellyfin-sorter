@@ -80,8 +80,14 @@ class Sorter {
                 logger.info { "Creating link: $link -> $relative" }
 
                 if (!dryRun) {
-                    link.parentFile.mkdirs()
-                    Files.createSymbolicLink(link.toPath(), relative.toPath())
+                    try {
+                        link.parentFile.mkdirs()
+                        Files.createSymbolicLink(link.toPath(), relative.toPath())
+                    }
+                    catch (e:Exception){
+                        logger.warn { "Error creating link: $link -> $relative" }
+                        logger.warn { e }
+                    }
                 }
             }
         }
